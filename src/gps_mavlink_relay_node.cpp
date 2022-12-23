@@ -106,19 +106,19 @@ void GpsMavlinkRelayer::topic_callback(const px4_msgs::msg::SensorGps::UniquePtr
     // RCLCPP_INFO(get_logger(), "SensorGps received, timestamp: %ld", msg->timestamp);
     mavsdk::TelemetryServer::RawGps raw_gps;
     raw_gps.timestamp_us = msg->time_utc_usec;
-    raw_gps.latitude_deg = msg->lat / 1e7;
-    raw_gps.longitude_deg = msg->lon / 1e7;
-    raw_gps.absolute_altitude_m = msg->alt / 1e3;
+    raw_gps.latitude_deg = static_cast<float>(static_cast<double>(msg->lat) / 1e7);
+    raw_gps.longitude_deg = static_cast<float>(static_cast<double>(msg->lon) / 1e7);
+    raw_gps.absolute_altitude_m = static_cast<float>(static_cast<double>(msg->alt) / 1e3);
     raw_gps.hdop = msg->hdop;
     raw_gps.vdop = msg->vdop;
     raw_gps.horizontal_uncertainty_m = msg->eph;
     raw_gps.vertical_uncertainty_m = msg->epv;
     raw_gps.velocity_m_s = msg->vel_m_s;
-    raw_gps.cog_deg = msg->cog_rad * 180 / M_PI;
-    raw_gps.altitude_ellipsoid_m = msg->alt_ellipsoid / 1e3;
+    raw_gps.cog_deg = static_cast<float>(static_cast<double>(msg->cog_rad) * 180. / M_PI);
+    raw_gps.altitude_ellipsoid_m = static_cast<float>(static_cast<double>(msg->alt_ellipsoid) / 1e3);
     raw_gps.velocity_uncertainty_m_s = msg->s_variance_m_s;
-    raw_gps.heading_uncertainty_deg = msg->c_variance_rad * 180 / M_PI;
-    raw_gps.yaw_deg = msg->heading * 180 / M_PI;
+    raw_gps.heading_uncertainty_deg = static_cast<float>(static_cast<double>(msg->c_variance_rad) * 180. / M_PI);
+    raw_gps.yaw_deg = static_cast<float>(static_cast<double>(msg->heading) * 180. / M_PI);
 
     mavsdk::TelemetryServer::GpsInfo gps_info;
     gps_info.num_satellites = msg->satellites_used;
@@ -127,7 +127,8 @@ void GpsMavlinkRelayer::topic_callback(const px4_msgs::msg::SensorGps::UniquePtr
     auto time_start_planning_tree = std::chrono::high_resolution_clock::now();
     telemetry_server_->publish_raw_gps(raw_gps, gps_info);
     RCLCPP_INFO(
-      get_logger(), "Mavsdk: Published with time %ld, took %.4f s to publish",
+      get_logger(), "Mavsdk: lat: %d, lon: %d, alt: %d lat: %.4f, lon: %.4f, alt: %.4f, time %ld, took %.4f",
+      msg->lat, msg->lon, msg->alt, raw_gps.latitude_deg, raw_gps.longitude_deg, raw_gps.absolute_altitude_m,
       msg->time_utc_usec,
       std::chrono::duration<float>(
         std::chrono::high_resolution_clock::now() -
