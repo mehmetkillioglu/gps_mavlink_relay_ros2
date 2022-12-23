@@ -3,8 +3,7 @@
 
 .circleci/
 .github/
-.git/
-.github/
+# .git/
 .vscode/
 .dockerignore
 .gitignore
